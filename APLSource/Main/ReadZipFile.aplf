@@ -1,14 +1,45 @@
- ReadZipFile←{
-     ⍝ ⍺ ←→ .NET ZipArchive
-     ⍝ ⍵ ←→ .NET Entry FullName
-     ⎕USING←'System'
-     d←('/'∊⍕⌷⍺.Entries)⊃'\/'
-     e←⍺.GetEntry⊂d@('/'∘=)⍵
-     e=⎕NULL:''
-     l←Convert.ToInt32 e.Length
-     s←e.Open
-     b←Array.CreateInstance Byte l
-     _←s.Read b 0(l)
-     _←Dispose s
-     'UTF-8'⎕UCS b.Clone
- }
+ dat←zf ReadZipFile fn;⎕USING;d;e;l;s;b
+     ⍝ zf ←→ .NET ZipArchive
+     ⍝ fn ←→ .NET Entry FullName
+
+     ⍝cut←{(~⍵∊⍺)⊆⍵}
+
+     :Select Platform.arch
+
+     :Case '.NET'
+         ⎕USING←'System'
+         d←('/'∊⍕⌷zf.Entries)⊃'\/'
+         e←zf.GetEntry⊂d@('/'∘=)fn
+         :If e=⎕NULL
+             dat←''
+         :Else
+             l←Convert.ToInt32 e.Length
+             s←e.Open
+             b←Array.CreateInstance Byte l
+             _←s.Read b 0(l)
+             _←Dispose s
+             dat←'UTF-8'⎕UCS b.Clone
+         :EndIf
+
+     :Case '.NET Core'
+         ⍝ .NET Core behaves slightly different than .NET
+         ⎕USING←(⊂''),'System' 'System.IO'
+         d←('/'∊⍕⌷zf.Entries)⊃'\/'
+         e←zf.GetEntry⊂d@('/'∘=)fn
+         :If e≡⎕NULL
+             dat←''
+         :Else
+             l←e.Length
+             s←e.Open
+             ms←⎕NEW System.IO.MemoryStream l
+             s.CopyTo ms
+             dat←'UTF-8'⎕UCS ms.GetBuffer
+             _←Dispose ms
+             _←Dispose s
+         :EndIf
+
+     :Case 'zip/unzip'
+         ⍝ TODO: Test this branch with Dyalog-17.1
+         dat←'UTF-8'⎕UCS ⎕SH∊'unzip -qq -p ',zf,' ''',fn,''''
+
+     :EndSelect

@@ -1,6 +1,15 @@
- OpenExcelFile←{
-     ⍝ ⍵ ←→ File Name
-     ⍝ ← ←→ .NET ZipArchive
-     ⎕USING←'System.IO.Compression,System.IO.Compression.FileSystem.dll'
-     ZipFile.OpenRead⊂⍵
- }
+ zf←OpenExcelFile fn;⎕USING
+     ⍝ fn ←→ File Name
+     ⍝ zf ←→ .NET ZipArchive
+
+     :Select Platform.arch
+     :Case '.NET'
+         ⎕USING←'System.IO.Compression,System.IO.Compression.FileSystem.dll'
+         zf←ZipFile.OpenRead⊂fn
+
+     :Case '.NET Core'
+         ⍝ .NET Core seems to behave slightly different than .NET
+         ⎕USING←(⊂''),⊂'System.IO.Compression,System.IO.Compression.ZipFile'
+         zf←System.IO.Compression.ZipFile.OpenRead⊂fn
+
+     :EndSelect

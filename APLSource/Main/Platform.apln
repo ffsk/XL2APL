@@ -1,0 +1,68 @@
+:Namespace Platform
+
+    ts←{⍺←' '
+        (,('ZI4,<->,ZI2,<->,ZI2,<',⍺,'>,ZI2,<:>,ZI2,<:>,ZI2,<.>,ZI3')⎕FMT 1 7⍴⎕TS),⍺,⍵
+    }
+
+    ∇ res←os;nm;ts
+     
+        ⍝ What OS are we running on?
+        :Select ⊢nm←3↑⊃'.'⎕WG'APLversion'
+        :Case 'AIX'
+            res←'AIX'
+     
+        :Case 'Mac'
+            res←'MacOS'
+     
+        :Case 'Win'
+            res←'Windows'
+     
+        :Case 'Lin'
+          ⍝ Further differentiate a Linux system
+          ⍝ TODO: Look for a way to implement the 'uname'-provided functionality in APL.
+          :Select 4↑⊃⎕SH'uname -a'
+          :Case 'armv'
+              ⍝ Assume 'armv' to be RaspberryPI. In the future, there could be Android as well
+              res←'RaspberryPi'
+     
+          :Else
+              ⍝ Otherwise assume Linux in general
+              res←'Linux'
+          :EndSelect
+     
+      :Else
+          (ts'Unknown operating system: ',nm)⎕SIGNAL 11
+      :EndSelect
+    ∇
+
+
+    ∇ res←arch;ts;o;v
+     
+      :Select ⊢o←os
+     
+      :Case 'Windows'
+          res←'.NET'
+     
+      :CaseList 'Linux' 'MacOS'
+          :Select ⊢v←⍎2↑∊1⌷'.'⎕WG'APLVERSION'
+     
+          :Case 18
+              ⍝ Starting in 18.0, .NET Core is available in Linux and MacOS
+              res←'.NET Core'
+     
+          :Else
+              ⍝ Otherwise, use either 'libzip' or 'zip/unzip' for creating/reading the Zip file.
+              res←'zip/unzip'
+     
+          :EndSelect
+     
+      :CaseList 'AIX' 'RaspberryPi'
+          res←'zip/unzip'
+     
+      :Else
+          (ts'Unknown platform: ',o,'-',v)⎕SIGNAL 11
+     
+      :EndSelect
+    ∇
+
+:EndNamespace  ⍝ Platform

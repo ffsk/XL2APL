@@ -1,4 +1,6 @@
  GetTestFileFQP←{
      f←##.AcreConfig.ProjectFolder
-     f,'Assets/Development/TestFiles/',⍵
+     ⍝ Add a separator in case it is not the last character in the path above
+     p←{'/'≠¯1↑⍵:'/' ⋄ ''}f
+     f,p,'Assets/Development/TestFiles/',⍵
  }

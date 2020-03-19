@@ -5,6 +5,8 @@
      ⍺.BlocksProcessed←0
      ⍺.EstimatedRowCount←0
      ⍺.TotalBlocks←0
+     ⍝ TODO: Fix the next three lines as they do not account for the case
+     ⍝       where the SheetName (⍵) is not found in the workbook.
      sn←⍵{0=≢⍺:⊃⍵ ⋄ ⍺}⍺.SheetNames
      i←⍺.SheetNames⍳⊂sn
      f←i⊃⍺.SheetFileNames

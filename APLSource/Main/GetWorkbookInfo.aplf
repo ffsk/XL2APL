@@ -1,9 +1,9 @@
- GetWorkbookInfo←{
-     ⍝ ⍵ ←→ FQP of .xlsx file
+ res←GetWorkbookInfo w;a;p;get;r;ri;rt;m;at;id;fn;k;d;f;se
+     ⍝ w ←→ FQP of .xlsx file
      ⍝   ←→ Space of usefull stuff
-     a←OpenExcelFile ⍵
+     a←OpenExcelFile w
      p←⎕NS''
-     p.FileName←⍵
+     p.FileName←w
      get←{0=≢⍵:'' ⋄ ⍺∘{(⍵[;0]⍳⊂⍺)⊃⍵[;1],⊂''}¨⍵}
      r←⎕XML a ReadZipFile'xl/_rels/workbook.xml.rels'
      ri←'Id'get r[;3]
@@ -21,12 +21,19 @@
      d←('/'∊⍕⌷a.Entries)⊃'\/'
      f←d@('/'∘=)
      se←{⍵[⍵.FullName⍳f¨fn]}⌷a.Entries
-     p.Lengths←Convert.ToInt32¨se.Length
-     p.CompressedLengths←Convert.ToInt32¨se.CompressedLength
+     :Select Platform.arch
+     :Case '.NET'
+         p.Lengths←Convert.ToInt32¨se.Length
+         p.CompressedLengths←Convert.ToInt32¨se.CompressedLength
+
+     :Case '.NET Core'
+         ⍝ .NET Core behaves slightly different than .NET
+         p.Lengths←,se.Length
+         p.CompressedLengths←,se.CompressedLength
+     :EndSelect
      p.BlockSize←2*22
      p.HeaderRows←1
      p.FooterRows←0
      p.RowsToRead←0
      _←Dispose a
-     p
- }
+     res←p
